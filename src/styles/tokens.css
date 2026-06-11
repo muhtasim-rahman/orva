@@ -1,0 +1,119 @@
+/*
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  ORVA — Theme Token System                                   ║
+ * ║  Status:  Dark mode active                                   ║
+ * ║  Light mode: Uncomment [data-theme="light"] block below      ║
+ * ║  Toggle:  document.documentElement.dataset.theme = 'light'   ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ */
+
+:root,
+[data-theme='dark'] {
+  /* ── Backgrounds ── */
+  --bg:           #090909;
+  --bg-2:         #111111;
+  --bg-3:         #181818;
+  --bg-4:         #202020;
+  --bg-overlay:   rgba(9, 9, 9, 0.94);
+
+  /* ── Borders ── */
+  --border-1:     #1a1a1a;
+  --border-2:     #252525;
+  --border-3:     #333333;
+
+  /* ── Text ── */
+  --text-1:       #f2ede7;   /* primary — warm off-white */
+  --text-2:       #999999;   /* secondary */
+  --text-3:       #555555;   /* muted */
+  --text-4:       #333333;   /* very muted */
+  --text-inv:     #0a0a0a;   /* on accent backgrounds */
+
+  /* ── Accent (warm cream — references quality fabric) ── */
+  --accent:       #c9b89a;
+  --accent-h:     #ddd0bb;   /* hover */
+  --accent-dim:   rgba(201, 184, 154, 0.12);
+  --accent-dim-h: rgba(201, 184, 154, 0.2);
+
+  /* ── Status ── */
+  --ok:           #5a9a7a;
+  --ok-dim:       rgba(90, 154, 122, 0.12);
+  --err:          #c4534a;
+  --err-dim:      rgba(196, 83, 74, 0.12);
+  --warn:         #b8872a;
+  --warn-dim:     rgba(184, 135, 42, 0.12);
+
+  /* ── Shadows ── */
+  --shadow-s:  0 1px 4px rgba(0,0,0,0.55);
+  --shadow-m:  0 4px 20px rgba(0,0,0,0.5);
+  --shadow-l:  0 12px 48px rgba(0,0,0,0.7);
+  --shadow-xl: 0 24px 64px rgba(0,0,0,0.8);
+
+  /* ── Radii ── */
+  --r-s:   4px;
+  --r-m:   8px;
+  --r-l:   12px;
+  --r-xl:  18px;
+  --r-f:   999px;
+
+  /* ── Transitions ── */
+  --t-fast:  150ms ease;
+  --t-base:  240ms ease;
+  --t-slow:  400ms ease;
+
+  /* ── Z-index layers ── */
+  --z-base:     1;
+  --z-above:    10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-drawer:   300;
+  --z-modal:    400;
+  --z-toast:    500;
+
+  /* ── Layout ── */
+  --container:    1200px;
+  --gap:          24px;
+  --gap-s:        12px;
+  --gap-l:        48px;
+
+  /* ── Nav ── */
+  --nav-h:        64px;
+  --tab-bar-h:    64px;
+}
+
+/*
+ * ══════════════════════════════════════════════════════════
+ *  LIGHT MODE — READY TO ACTIVATE
+ *  1. Remove the comment markers below
+ *  2. Add a theme toggle button in Navbar.jsx
+ *  3. Store preference: localStorage.setItem('orva-theme', 'light')
+ *     and set document.documentElement.dataset.theme = 'light'
+ * ══════════════════════════════════════════════════════════
+ *
+[data-theme='light'] {
+  --bg:           #f6f3ee;
+  --bg-2:         #ede9e2;
+  --bg-3:         #e4dfd7;
+  --bg-4:         #d8d2c9;
+  --bg-overlay:   rgba(246, 243, 238, 0.94);
+
+  --border-1:     #ddd8d0;
+  --border-2:     #ccc6bc;
+  --border-3:     #b8b2a8;
+
+  --text-1:       #1a1714;
+  --text-2:       #6b6460;
+  --text-3:       #a09890;
+  --text-4:       #c0b8b0;
+  --text-inv:     #f6f3ee;
+
+  --accent:       #8a6a3a;
+  --accent-h:     #6e5430;
+  --accent-dim:   rgba(138, 106, 58, 0.1);
+  --accent-dim-h: rgba(138, 106, 58, 0.18);
+
+  --shadow-s:  0 1px 4px rgba(0,0,0,0.1);
+  --shadow-m:  0 4px 20px rgba(0,0,0,0.1);
+  --shadow-l:  0 12px 48px rgba(0,0,0,0.15);
+  --shadow-xl: 0 24px 64px rgba(0,0,0,0.2);
+}
+ */
