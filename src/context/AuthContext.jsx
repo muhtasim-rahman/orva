@@ -1,13 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
-  onAuthStateChanged,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signOut,
-  EmailAuthProvider,
-  linkWithCredential,
-  fetchSignInMethodsForEmail,
+  onAuthStateChanged, signInWithPopup, signInWithEmailAndPassword,
+  GoogleAuthProvider, signOut,
 } from 'firebase/auth';
 import { ref, get } from 'firebase/database';
 import { auth, db } from '@/lib/firebase';
@@ -15,28 +9,30 @@ import { auth, db } from '@/lib/firebase';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser]           = useState(undefined); // undefined = loading
-  const [isAdmin, setIsAdmin]     = useState(false);
-  const [pinPassed, setPinPassed] = useState(
-    // Persists for the browser tab session
+  const [user, setUser]                   = useState(undefined);   // undefined = still loading
+  const [isAdmin, setIsAdmin]             = useState(false);
+  const [isAdminChecking, setChecking]    = useState(false);       // true while RTDB check runs
+  const [pinPassed, setPinPassed]         = useState(
     () => sessionStorage.getItem('orva_pin_ok') === '1'
   );
 
-  // Listen to Firebase auth state
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        // Check if this UID is in admin whitelist
+        setChecking(true);
         try {
           if (!db) { setIsAdmin(false); return; }
           const snap = await get(ref(db, `settings/admin/allowedUids/${u.uid}`));
           setIsAdmin(snap.exists() && snap.val() === true);
         } catch {
           setIsAdmin(false);
+        } finally {
+          setChecking(false);
         }
       } else {
         setIsAdmin(false);
+        setChecking(false);
       }
     });
     return unsub;
@@ -48,14 +44,11 @@ export function AuthProvider({ children }) {
   }
 
   async function loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    const result   = await signInWithPopup(auth, provider);
-    return result.user;
+    return (await signInWithPopup(auth, new GoogleAuthProvider())).user;
   }
 
   async function loginWithEmail(email, password) {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    return result.user;
+    return (await signInWithEmailAndPassword(auth, email, password)).user;
   }
 
   async function logout() {
@@ -65,18 +58,15 @@ export function AuthProvider({ children }) {
     await signOut(auth);
   }
 
-  const value = {
-    user,
-    isAdmin,
-    pinPassed,
-    loading: user === undefined,
-    markPinPassed,
-    loginWithGoogle,
-    loginWithEmail,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{
+      user, isAdmin, isAdminChecking, pinPassed,
+      loading: user === undefined,
+      markPinPassed, loginWithGoogle, loginWithEmail, logout,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

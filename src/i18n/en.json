@@ -10,7 +10,11 @@
     "view_all": "View All Products",
     "fb_card_label": "Follow us on Facebook",
     "fb_card_desc": "Stay updated with our latest collections and offers.",
-    "fb_visit": "Visit Page"
+    "fb_visit": "Visit Page",
+    "wa_card_label": "WhatsApp / Call Us",
+    "wa_card_desc": "Place an order or ask us anything directly.",
+    "yt_card_label": "Watch on YouTube",
+    "yt_card_desc": "Style tips, lookbooks and new collection previews."
   },
   "products": {
     "heading": "All Products",

@@ -1,43 +1,38 @@
 /*
  * ORVA — Typography
- * Display / Heading: Cormorant Garamond (serif, editorial — matches logo)
- * Body / UI:         DM Sans (clean, modern)
- * Bengali:           Hind Siliguri
+ * Display: Cormorant Garamond (serif, matches logo)
+ * Body:    DM Sans (clean, modern)
+ * Bengali: Noto Sans Bengali (better rendering, no letter-spacing)
  */
 
-/* ── Font variables ── */
 :root {
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-bn:      'Hind Siliguri', 'Cormorant Garamond', serif;
+  --font-bn:      'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
 
-  /* Size scale */
-  --text-xs:   0.75rem;    /* 12px */
-  --text-sm:   0.875rem;   /* 14px */
-  --text-base: 1rem;       /* 16px */
-  --text-md:   1.125rem;   /* 18px */
-  --text-lg:   1.25rem;    /* 20px */
-  --text-xl:   1.5rem;     /* 24px */
-  --text-2xl:  2rem;       /* 32px */
-  --text-3xl:  2.5rem;     /* 40px */
-  --text-4xl:  3.5rem;     /* 56px */
-  --text-5xl:  5rem;       /* 80px */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.125rem;
+  --text-lg:   1.25rem;
+  --text-xl:   1.5rem;
+  --text-2xl:  2rem;
+  --text-3xl:  2.5rem;
+  --text-4xl:  3.5rem;
+  --text-5xl:  5rem;
 
-  /* Line heights */
   --leading-tight:  1.2;
   --leading-snug:   1.35;
   --leading-base:   1.55;
-  --leading-loose:  1.75;
+  --leading-loose:  1.8;
 
-  /* Letter spacings */
   --tracking-tight:  -0.02em;
-  --tracking-normal: 0;
-  --tracking-wide:   0.04em;
-  --tracking-wider:  0.1em;
-  --tracking-widest: 0.2em;
+  --tracking-normal:  0;
+  --tracking-wide:    0.04em;
+  --tracking-wider:   0.1em;
+  --tracking-widest:  0.2em;
 }
 
-/* ── Display (headings, product titles) ── */
 .font-display { font-family: var(--font-display); }
 
 h1, h2, h3, .heading {
@@ -46,14 +41,12 @@ h1, h2, h3, .heading {
   line-height: var(--leading-tight);
   color: var(--text-1);
 }
-
 h1 { font-size: clamp(2.5rem, 6vw, 5rem); letter-spacing: var(--tracking-tight); }
 h2 { font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: var(--tracking-tight); }
 h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
 h4 { font-size: var(--text-lg); font-family: var(--font-body); font-weight: 500; }
 h5 { font-size: var(--text-md); font-family: var(--font-body); font-weight: 500; }
 
-/* ── Body ── */
 p {
   font-family: var(--font-body);
   font-size: var(--text-base);
@@ -62,7 +55,6 @@ p {
   font-weight: 300;
 }
 
-/* ── Label / caption utilities ── */
 .label {
   font-family: var(--font-body);
   font-size: var(--text-xs);
@@ -79,21 +71,30 @@ p {
   line-height: var(--leading-snug);
 }
 
-/* ── Bengali text ── */
+/*
+ * Bengali text — critical rules:
+ * 1. Use Noto Sans Bengali (better kerning and rendering)
+ * 2. letter-spacing: 0 — Bengali script breaks with any letter-spacing
+ * 3. word-spacing: normal — let the font handle it
+ * 4. Higher line-height for readability
+ */
 .lang-bn,
-[lang='bn'] {
-  font-family: var(--font-bn);
+[lang='bn'],
+.lang-bn * {
+  font-family: var(--font-bn) !important;
+  letter-spacing: 0 !important;
+  word-spacing: normal;
   line-height: var(--leading-loose);
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  -webkit-font-feature-settings: 'kern' 1, 'liga' 1;
 }
 
-/* ── Price display ── */
 .price {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: var(--tracking-tight);
   color: var(--text-1);
 }
-
 .price-from {
   font-size: var(--text-xs);
   font-family: var(--font-body);
@@ -102,5 +103,4 @@ p {
   color: var(--text-3);
 }
 
-/* ── Misc ── */
 .text-balance { text-wrap: balance; }
