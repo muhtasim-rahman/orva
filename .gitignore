@@ -34,3 +34,4 @@ firebase-debug.log
 # Others
 .creator
 .versions
+.ignore

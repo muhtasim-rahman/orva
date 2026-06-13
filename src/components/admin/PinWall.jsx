@@ -6,43 +6,41 @@ import { validatePin } from '@/lib/cloudflare';
 import { useNavigate } from 'react-router-dom';
 
 const MAX_ATTEMPTS = 3;
-const IDLE_TIMEOUT = 60_000; // 1 minute
+const IDLE_TIMEOUT = 60_000;
 
 export default function PinWall({ onSuccess }) {
   const { t }    = useTranslation();
   const navigate = useNavigate();
-  const inputRef = useRef(null);
+  // v1.2: focusable div ref instead of hidden input (prevents mobile keyboard popup)
+  const trapRef   = useRef(null);
   const idleTimer = useRef(null);
 
-  const [pin, setPin]         = useState('');
-  const [error, setError]     = useState('');
-  const [loading, setLoading] = useState(false);
+  const [pin, setPin]           = useState('');
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(false);
   const [attempts, setAttempts] = useState(0);
-  const [shake, setShake]     = useState(false);
+  const [shake, setShake]       = useState(false);
 
-  // Focus the hidden input whenever user taps anywhere
-  const focusInput = useCallback(() => {
-    setTimeout(() => inputRef.current?.focus(), 10);
+  // Keep the focus trap focused so keyboard events are captured
+  const refocus = useCallback(() => {
+    setTimeout(() => trapRef.current?.focus(), 10);
   }, []);
 
   useEffect(() => {
-    focusInput();
-    // Idle timeout — redirect home if user is inactive for 1 minute
+    refocus();
     const reset = () => {
       clearTimeout(idleTimer.current);
       idleTimer.current = setTimeout(() => navigate('/', { replace: true }), IDLE_TIMEOUT);
     };
     reset();
     window.addEventListener('mousemove', reset);
-    window.addEventListener('keydown', reset);
     window.addEventListener('touchstart', reset);
     return () => {
       clearTimeout(idleTimer.current);
       window.removeEventListener('mousemove', reset);
-      window.removeEventListener('keydown', reset);
       window.removeEventListener('touchstart', reset);
     };
-  }, [navigate, focusInput]);
+  }, [navigate, refocus]);
 
   const submit = useCallback(async (value) => {
     setLoading(true);
@@ -51,22 +49,21 @@ export default function PinWall({ onSuccess }) {
     if (valid) {
       onSuccess();
     } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
+      const na = attempts + 1;
+      setAttempts(na);
       setPin('');
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      if (newAttempts >= MAX_ATTEMPTS) {
+      if (na >= MAX_ATTEMPTS) {
         setError(t('admin.pin_locked'));
         setTimeout(() => navigate('/'), 2500);
       } else {
         setError(t('admin.pin_wrong'));
       }
-      // Re-focus after error
-      setTimeout(focusInput, 100);
+      setTimeout(refocus, 100);
     }
     setLoading(false);
-  }, [attempts, t, navigate, onSuccess, focusInput]);
+  }, [attempts, t, navigate, onSuccess, refocus]);
 
   const handleDigit = useCallback((d) => {
     if (pin.length >= 8 || loading) return;
@@ -76,28 +73,27 @@ export default function PinWall({ onSuccess }) {
     if (next.length === 8) submit(next);
   }, [pin, loading, submit]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setPin(p => p.slice(0, -1));
     setError('');
-    focusInput();
-  };
+  }, []);
 
-  // Physical keyboard support
+  // v1.2: single keyboard handler on the focus-trap div (no window listener = no double-fire)
   const handleKeyDown = useCallback((e) => {
     if (loading) return;
-    if (e.key >= '0' && e.key <= '9') handleDigit(e.key);
-    else if (e.key === 'Backspace') handleDelete();
-  }, [loading, handleDigit]);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    if (e.key >= '0' && e.key <= '9') {
+      e.preventDefault();
+      handleDigit(e.key);
+    } else if (e.key === 'Backspace') {
+      e.preventDefault();
+      handleDelete();
+    }
+  }, [loading, handleDigit, handleDelete]);
 
   const dots = Array.from({ length: 8 }, (_, i) => i < pin.length);
 
   return (
-    <div className="pin-wall" onClick={focusInput}>
+    <div className="pin-wall" onClick={refocus}>
       <motion.div
         className="pin-card"
         initial={{ opacity: 0, scale: 0.96 }}
@@ -121,24 +117,18 @@ export default function PinWall({ onSuccess }) {
           ))}
         </motion.div>
 
-        {/* Hidden real input — captures mobile keyboard + keeps focus */}
-        <input
-          ref={inputRef}
-          type="tel"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={pin}
-          onChange={e => {
-            const v = e.target.value.replace(/\D/g, '').slice(0, 8);
-            setPin(v);
-            setError('');
-            if (v.length === 8) submit(v);
-          }}
-          className="pin-hidden-input"
-          aria-label="Enter PIN"
-          disabled={loading}
-          autoFocus
-          autoComplete="off"
+        {/*
+          v1.2 FIX: Replace the hidden <input> (which caused double-firing on PC
+          and opened the mobile keyboard) with a focusable div that only captures
+          keyboard events via onKeyDown. On-screen keypad handles mobile input.
+          No mobile keyboard will ever appear.
+        */}
+        <div
+          ref={trapRef}
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          className="pin-focus-trap"
+          aria-label="PIN input — use keypad below"
         />
 
         {/* On-screen keypad */}
@@ -148,13 +138,13 @@ export default function PinWall({ onSuccess }) {
             if (key === '⌫') {
               return (
                 <button key={i} className="pin-key pin-key-del" type="button"
-                  onClick={() => { handleDelete(); focusInput(); }}
+                  onClick={() => { handleDelete(); refocus(); }}
                   disabled={!pin.length || loading}>⌫</button>
               );
             }
             return (
               <button key={i} className="pin-key" type="button"
-                onClick={() => { handleDigit(String(key)); focusInput(); }}
+                onClick={() => { handleDigit(String(key)); refocus(); }}
                 disabled={loading || pin.length >= 8}>
                 {key}
               </button>
@@ -190,11 +180,14 @@ export default function PinWall({ onSuccess }) {
         .pin-dot { width:12px; height:12px; border-radius:50%; border:1.5px solid var(--border-3);
           background:transparent; transition:all var(--t-fast); }
         .pin-dot.filled { background:var(--text-1); border-color:var(--text-1); }
-        .pin-hidden-input { position:absolute; opacity:0; pointer-events:none; width:1px; height:1px; }
+        /* Invisible focus trap — keyboard support without visible element */
+        .pin-focus-trap { position:absolute; opacity:0; pointer-events:none; width:0; height:0;
+          overflow:hidden; }
         .pin-keypad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%; }
         .pin-key { height:56px; border-radius:var(--r-m); background:var(--bg-3);
           border:1px solid var(--border-1); font-size:var(--text-lg); font-weight:400;
-          color:var(--text-1); transition:all var(--t-fast); font-family:var(--font-display); }
+          color:var(--text-1); transition:all var(--t-fast); font-family:var(--font-display);
+          -webkit-tap-highlight-color:transparent; }
         .pin-key:hover:not(:disabled) { background:var(--bg-4); border-color:var(--border-3); }
         .pin-key:active:not(:disabled) { transform:scale(0.96); }
         .pin-key:disabled { opacity:0.3; cursor:not-allowed; }

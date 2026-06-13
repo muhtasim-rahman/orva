@@ -17,15 +17,23 @@ export default function MobileTabBar() {
   const isActive = (to) =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
-  // Hide tab bar on admin page
   if (location.pathname.startsWith('/admin')) return null;
+
+  // v1.2: clicking the active tab scrolls to top
+  const handleTabClick = (e, to) => {
+    if (isActive(to)) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <nav className="tab-bar" aria-label="Mobile navigation">
       {TABS.map(({ to, icon: Icon, key }) => {
         const active = isActive(to);
         return (
-          <Link key={to} to={to} className={`tab-bar-item ${active ? 'active' : ''}`}>
+          <Link key={to} to={to} className={`tab-bar-item ${active ? 'active' : ''}`}
+            onClick={(e) => handleTabClick(e, to)}>
             <span className="tab-bar-icon">
               <Icon size={20} strokeWidth={active ? 2 : 1.5} />
               {active && (
@@ -53,7 +61,7 @@ export default function MobileTabBar() {
 
       <style>{`
         .tab-bar {
-          display: none; /* shown only on mobile via media query */
+          display: none;
           position: fixed;
           bottom: 0; left: 0; right: 0;
           height: var(--tab-bar-h);
@@ -65,11 +73,9 @@ export default function MobileTabBar() {
           padding: 0 4px;
           padding-bottom: env(safe-area-inset-bottom, 0px);
         }
-
         @media (max-width: 640px) {
           .tab-bar { display: flex; align-items: stretch; justify-content: space-around; }
         }
-
         .tab-bar-item {
           flex: 1;
           display: flex;
@@ -87,19 +93,17 @@ export default function MobileTabBar() {
           background: none;
           font-family: var(--font-body);
           text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
         }
         .tab-bar-item.active { color: var(--text-1); }
         .tab-bar-item:active { background: var(--bg-3); }
-
         .tab-bar-icon {
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 28px;
-          height: 28px;
+          width: 28px; height: 28px;
         }
-
         .tab-indicator {
           position: absolute;
           inset: -4px;
@@ -107,15 +111,12 @@ export default function MobileTabBar() {
           background: var(--bg-4);
           z-index: -1;
         }
-
         .tab-bar-label {
           font-size: 9px;
           font-weight: 500;
           letter-spacing: 0.06em;
           text-transform: uppercase;
         }
-
-        /* Language button special styling */
         .tab-lang-icon {
           font-size: 9px;
           font-weight: 600;

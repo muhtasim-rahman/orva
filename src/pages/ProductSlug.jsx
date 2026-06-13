@@ -46,6 +46,13 @@ export default function ProductSlug() {
   const [copied, setCopied]         = useState(false);
   const [showInfo, setShowInfo]     = useState(false);
 
+  // v1.2 FIX: Reset receipt when order inputs change so stale image is never reused
+  useEffect(() => {
+    setReceiptUrl(null);
+    setReceiptPreview(null);
+    setOrderState('idle');
+  }, [selections, quantity, customer.name, customer.phone, customer.address, customer.note]);
+
   const images = product?.images || [];
 
   useEffect(() => {
@@ -147,10 +154,12 @@ export default function ProductSlug() {
     );
   }
 
+  const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://orva-bd.web.app';
   const title    = tField(product.title, lang);
   const desc     = tField(product.description, lang);
   const metaDesc = tField(product.metaDescription, lang) || desc?.slice(0, 160);
-  const ogImage  = images[0] || '/assets/logo-blackBG.webp';
+  // v1.2 FIX: use absolute URL so OG/thumbnail works when shared
+  const ogImage  = images[0] || `${SITE_URL}/assets/logo-blackBG.webp`;
   const isProcessing = orderState === 'generating' || orderState === 'uploading';
 
   return (
@@ -291,7 +300,7 @@ export default function ProductSlug() {
                 <div className="slug-receipt-preview">
                   <div className="slug-receipt-header">
                     <ImageIcon size={13} strokeWidth={1.5} />
-                    <span>Order Receipt Generated</span>
+                    <span>{t('product.receipt_ready')}</span>
                     {receiptUrl && <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="slug-receipt-link">View →</a>}
                   </div>
                   <img src={receiptPreview} alt="Order Receipt" className="slug-receipt-img" />
@@ -302,7 +311,7 @@ export default function ProductSlug() {
               {isProcessing && (
                 <div className="slug-processing">
                   <Loader2 size={14} className="slug-spin" />
-                  <span>{orderState === 'generating' ? 'Generating receipt…' : 'Uploading receipt…'}</span>
+                  <span>{orderState === 'generating' ? t('product.receipt_generating') : t('product.receipt_uploading')}</span>
                 </div>
               )}
 
@@ -326,7 +335,7 @@ export default function ProductSlug() {
               </div>
 
               {!canOrder && (
-                <p className="slug-order-hint"><Info size={12} /> Fill in name, phone and address to order.</p>
+                <p className="slug-order-hint"><Info size={12} /> {t('product.order_hint')}</p>
               )}
 
               <button className="slug-how-btn" onClick={() => setShowInfo(v => !v)}>

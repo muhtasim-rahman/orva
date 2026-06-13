@@ -151,21 +151,25 @@ export default function Home() {
           transition:all var(--t-base); }
         .home-view-all:hover { color:var(--text-1); border-color:var(--border-3); background:var(--bg-2); }
 
-        .home-social-section { padding:0 0 80px; }
+        .home-social-section { padding:0 0 64px; }
+        /* v1.2: 3-col on desktop, 1-col on mobile — no overflow/scrollbar */
         .home-social-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-        @media(max-width:768px){ .home-social-grid{ grid-template-columns:1fr; } }
+        @media(max-width:768px){ .home-social-grid{ grid-template-columns:1fr; gap:8px; } }
 
-        .home-social-card { display:flex; align-items:center; gap:14px;
-          padding:18px 20px; background:var(--bg-2); border:1px solid var(--border-1);
-          border-radius:var(--r-l); transition:border-color var(--t-base); text-decoration:none; }
+        .home-social-card { display:flex; align-items:center; gap:12px;
+          padding:14px 16px; background:var(--bg-2); border:1px solid var(--border-1);
+          border-radius:var(--r-l); transition:border-color var(--t-base); text-decoration:none;
+          overflow:hidden; /* prevent card itself from overflowing grid */ }
         .home-social-card:hover { border-color:var(--border-3); }
-        .hsc-icon { width:42px; height:42px; flex-shrink:0; border-radius:var(--r-m);
+        .hsc-icon { width:38px; height:38px; flex-shrink:0; border-radius:var(--r-m);
           background:var(--bg-3); border:1px solid var(--border-2);
           display:flex; align-items:center; justify-content:center; }
         .hsc-fb { color:#4267B2; }
         .hsc-wa { color:#25D366; }
         .hsc-yt { color:#FF0000; }
-        .hsc-info { flex:1; display:flex; flex-direction:column; gap:2px; overflow:hidden; }
+        /* v1.2 FIX: min-width:0 allows flex child to shrink below content width,
+           preventing horizontal overflow that causes the unwanted scrollbar */
+        .hsc-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
         .hsc-label { font-size:var(--text-sm); font-weight:500; color:var(--text-1);
           white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .hsc-desc  { font-size:var(--text-xs); color:var(--text-3); white-space:nowrap;

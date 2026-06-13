@@ -4,12 +4,11 @@ import { db } from '@/lib/firebase';
 import { objToArray } from '@/utils';
 
 function useDbRef(path, transform) {
-  const [data, setData]     = useState(null);
+  const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(null);
+  const [error, setError]     = useState(null);
 
   useEffect(() => {
-    // db is null when DATABASE_URL is missing — fail gracefully
     if (!db) {
       setError('Database not configured. Check VITE_FIREBASE_DATABASE_URL in .env');
       setLoading(false);
@@ -28,7 +27,7 @@ function useDbRef(path, transform) {
     };
     onValue(r, handler, (e) => { setError(e.message); setLoading(false); });
     return () => off(r, 'value', handler);
-  }, [path]);
+  }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, loading, error };
 }
@@ -71,7 +70,24 @@ export function useCategories() {
   return { categories: data || [], loading };
 }
 
+export function useAllCategories() {
+  const { data, loading } = useDbRef('categories', (raw) =>
+    objToArray(raw || {}).sort((a, b) => (a.order || 0) - (b.order || 0))
+  );
+  return { categories: data || [], loading };
+}
+
+/**
+ * FIX v1.2: Read settings/site and settings/social SEPARATELY as public paths.
+ * Previously useDbRef('settings', ...) failed for unauthenticated users because
+ * settings/admin/$other has auth-required rules, causing the entire parent read to fail.
+ * Reading the two public sub-paths directly bypasses this cascade failure.
+ */
 export function useSettings() {
-  const { data, loading } = useDbRef('settings', (raw) => raw || {});
-  return { settings: data, loading };
+  const { data: siteData,   loading: l1 } = useDbRef('settings/site',   raw => raw || {});
+  const { data: socialData, loading: l2 } = useDbRef('settings/social', raw => raw || {});
+  return {
+    settings: { site: siteData || {}, social: socialData || {} },
+    loading: l1 || l2,
+  };
 }

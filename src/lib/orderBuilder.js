@@ -198,7 +198,8 @@ export function generateReceiptCanvas(details) {
       ctx.textAlign = 'center';
       ctx.fillStyle = '#333333';
       ctx.font = '400 11px "DM Sans", sans-serif';
-      ctx.fillText('orva-bd.web.app  •  hello.orvabd@gmail.com  •  +8801799-497717', W / 2, H - 44);
+      const siteUrl = (typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_SITE_URL || 'orva-bd.web.app') : 'orva-bd.web.app').replace(/https?:\/\//, '');
+      ctx.fillText(siteUrl + '  •  hello.orvabd@gmail.com  •  +8801799-497717', W / 2, H - 44);
 
       ctx.fillStyle = '#222222';
       ctx.font = '400 9px "DM Sans", sans-serif';

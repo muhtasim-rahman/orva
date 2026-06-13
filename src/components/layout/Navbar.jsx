@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toggleLanguage } from '@/i18n';
 import { motion } from 'framer-motion';
@@ -12,16 +12,26 @@ const LINKS = [
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const location    = useLocation();
+  const navigate    = useNavigate();
   const lang        = i18n.language;
 
   const isActive = (to) =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
 
+  // v1.2: clicking the active page link scrolls to top instead of re-navigating
+  const handleNavClick = (e, to) => {
+    if (isActive(to)) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="navbar">
       <div className="navbar-inner container">
         {/* Logo */}
-        <Link to="/" className="navbar-logo" aria-label="ORVA — Home">
+        <Link to="/" className="navbar-logo" aria-label="ORVA — Home"
+          onClick={(e) => handleNavClick(e, '/')}>
           <img src="/assets/logo-white.webp" alt="ORVA" className="navbar-logo-img" />
         </Link>
 
@@ -32,6 +42,7 @@ export default function Navbar() {
               key={to}
               to={to}
               className={`navbar-link ${isActive(to) ? 'active' : ''}`}
+              onClick={(e) => handleNavClick(e, to)}
             >
               {t(key)}
               {isActive(to) && (
@@ -84,7 +95,6 @@ export default function Navbar() {
           height: 28px;
           width: auto;
           object-fit: contain;
-          filter: brightness(1);
           transition: opacity var(--t-fast);
         }
         .navbar-logo:hover .navbar-logo-img { opacity: 0.75; }
@@ -115,8 +125,7 @@ export default function Navbar() {
           bottom: -1px;
           left: 50%;
           transform: translateX(-50%);
-          width: 3px;
-          height: 3px;
+          width: 3px; height: 3px;
           border-radius: 50%;
           background: var(--accent);
         }
@@ -139,7 +148,6 @@ export default function Navbar() {
         .navbar-lang .active { color: var(--text-1); }
         .navbar-lang-sep { color: var(--border-3); }
 
-        /* Hide desktop nav on mobile — MobileTabBar handles it */
         @media (max-width: 640px) {
           .navbar-links { display: none; }
           .navbar-logo-img { height: 22px; }

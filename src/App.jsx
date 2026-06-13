@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider } from '@/context/AuthContext';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import MobileTabBar from '@/components/layout/MobileTabBar';
@@ -68,6 +69,7 @@ export default function App() {
     <HelmetProvider>
       <AuthProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AnimatedRoutes />
         </BrowserRouter>
       </AuthProvider>

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
-const INTERVAL = 5000;
+const INTERVAL = 8000; // v1.2: 8 seconds
 
 const PLACEHOLDER_BANNERS = [
   { url: null, link: '/products', alt: 'ORVA Collection' },

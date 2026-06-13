@@ -1,35 +1,21 @@
-// ORVA — Cloudflare Worker API + Dual PIN validation
+// ORVA v1.2 — Cloudflare Worker API
+// PIN validation is now Cloudflare-only (RTDB hash removed from public validation).
+// The PIN hash is never sent to the client — Cloudflare compares server-side.
 
 const CF_URL = import.meta.env.VITE_CF_WORKER_URL || 'https://setup.hello-orvabd.workers.dev';
 
-/** SHA-256 hash a string using browser crypto */
-async function sha256(text) {
+/** SHA-256 hash a string using browser SubtleCrypto */
+export async function sha256(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 /**
- * Dual-PIN validation:
- *  1. Try RTDB custom PIN (SHA-256 hash stored at settings/admin/pinHash)
- *  2. Fall back to Cloudflare emergency PIN
+ * v1.2: PIN validation goes exclusively to Cloudflare Worker.
+ * The worker checks the custom KV-stored PIN and the emergency PIN server-side.
+ * The hash is never exposed to the client/inspector.
  */
 export async function validatePin(pin) {
-  // 1. Check RTDB custom PIN hash first
-  try {
-    const { db } = await import('./firebase.js');
-    if (db) {
-      const { ref, get } = await import('firebase/database');
-      const snap = await get(ref(db, 'settings/admin/pinHash'));
-      if (snap.exists()) {
-        const storedHash = snap.val();
-        const inputHash  = await sha256(pin);
-        if (inputHash === storedHash) return { valid: true, source: 'custom' };
-        // Hash present but doesn't match — still try Cloudflare emergency PIN below
-      }
-    }
-  } catch { /* DB unavailable — fall through */ }
-
-  // 2. Cloudflare emergency PIN fallback
   try {
     const res = await fetch(`${CF_URL}/validate-pin`, {
       method:  'POST',
@@ -37,9 +23,37 @@ export async function validatePin(pin) {
       body:    JSON.stringify({ pin }),
     });
     const data = await res.json().catch(() => ({}));
-    return { valid: !!data.valid, error: data.error, source: 'emergency' };
+    return { valid: !!data.valid, source: data.source || 'cloudflare' };
   } catch {
     return { valid: false, error: 'Network error. Check connection.' };
+  }
+}
+
+/**
+ * v1.2: Change the admin PIN.
+ * Sends the SHA-256 hash to Cloudflare which verifies the Firebase ID token
+ * before storing the new hash in its KV store. Hash never stored client-side.
+ * @param {string} newPin       - plain 8-digit PIN
+ * @param {string} firebaseToken - Firebase ID token (from user.getIdToken())
+ */
+export async function updateAdminPin(newPin, firebaseToken) {
+  try {
+    const pinHash = await sha256(newPin);
+    const res = await fetch(`${CF_URL}/update-pin`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${firebaseToken}`,
+      },
+      body: JSON.stringify({ pinHash }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to update PIN' };
+    }
+    return { success: true };
+  } catch {
+    return { success: false, error: 'Network error. Check connection.' };
   }
 }
 

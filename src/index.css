@@ -7,6 +7,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  /* v1.2: Remove blue tap-highlight on mobile for all elements */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -30,6 +32,7 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Images ── */
@@ -48,6 +51,7 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Scrollbar ── */

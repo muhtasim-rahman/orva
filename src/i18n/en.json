@@ -51,7 +51,11 @@
     "how_to_order": "How to Order",
     "how_to_order_desc": "Select your options, fill in your details, then send the order to us via Messenger or WhatsApp. We will confirm and process your order.",
     "view_all_images": "View all images",
-    "zoom_hint": "Click to zoom"
+    "zoom_hint": "Click to zoom",
+    "receipt_generating": "Generating receipt…",
+    "receipt_uploading": "Uploading receipt…",
+    "receipt_ready": "Order Receipt Generated",
+    "order_hint": "Fill in name, phone and address to order."
   },
   "about": {
     "heading": "About ORVA",
@@ -139,7 +143,7 @@
     "tagline": "Wear the statement.",
     "nav_label": "Navigation",
     "social_label": "Social",
-    "copy": "© 2025 ORVA. All rights reserved.",
+    "copy": "© 2026 ORVA. All rights reserved.",
     "crafted": "Crafted by"
   }
 }
